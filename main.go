@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"strings"
@@ -20,7 +19,7 @@ type webconfig struct {
 
 var availableWebsites = []webconfig{
 	{"voot", "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"},
-	//{"hotstar", "http://search.hotstar.com/AVS/besc"},
+	{"hotstar", "http://search.hotstar.com/AVS/besc"},
 }
 
 type MovieRequester struct {
@@ -62,8 +61,8 @@ func (mr *MovieRequester) get(pageIndex string) ([]byte, error) {
 	mr.request.Header.Add("content-type", "application/x-www-form-urlencoded")
 	//	}
 
-	dump, _ := httputil.DumpRequestOut(mr.request, true)
-	fmt.Println(string(dump))
+	//	dump, _ := httputil.DumpRequestOut(mr.request, true)
+	//	fmt.Println(string(dump))
 	res, _ := http.DefaultClient.Do(mr.request)
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
@@ -82,13 +81,10 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 		return len(r.ResultObj.Response.Docs)
 	case "voot":
 		r := VootResponse{}
-		log.Println("Error while ub", string(b))
-
 		err := json.Unmarshal(b, &r)
 		if err != nil {
 			log.Println("Error while unmarshalling voot", err)
 		}
-		log.Println("  voot", r)
 		for _, movies := range r.Assets {
 			fmt.Println(movies.Name + "    " + mr.website)
 		}
@@ -112,10 +108,10 @@ func (mr *MovieRequester) getPostVars() io.Reader {
 	case "voot":
 		form := url.Values{}
 		form.Add("filterTypes", "390")
-		//form.Add("filter", "(and (and  contentType='Movie' ))")
+		form.Add("filter", "(and (and  contentType='Movie' ))")
 		form.Add("pageIndex", mr.pageIndex)
 		form.Add("pageSize", "10")
-		fmt.Println(form.Encode())
+		//	fmt.Println(form.Encode())
 	}
 
 	return strings.NewReader(form.Encode())
@@ -127,9 +123,10 @@ func (mr *MovieRequester) requesrUrl() (*http.Request, error) {
 		v := "?action=SearchContents&appVersion=5.0.40&channel=PCTV&maxResult=12&moreFilters=language:hindi%3B&query=*&searchOrder=counter_day+desc&startIndex=" + mr.pageIndex + "&type=MOVIE"
 		return http.NewRequest("GET", mr.url+v, nil)
 	case "voot":
-		fmt.Println("vooooooo", mr.url)
-
-		return http.NewRequest("POST", mr.url, mr.getPostVars())
+		//TODO temp workaround
+		mr.getPostVars()
+		payload := strings.NewReader("filterTypes=390&filter=(and%20(and%20%20contentType%3D'Movie'%20))&pageIndex=" + mr.pageIndex)
+		return http.NewRequest("POST", mr.url, payload)
 	default:
 		return http.NewRequest("GET", mr.url, nil)
 	}
