@@ -74,14 +74,23 @@ type VootResponse struct {
 	} `json:"status"`
 }
 
-func main() {
+type MovieRequester struct {
+	url       string
+	pageIndex string
+	request   *http.Request
+}
 
-	index := 1
+func main() {
+	mr := MovieRequester{}
+	mr.url = "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"
+
+	index := 0
 	totalMovies := 0
 	for {
-		b, _ := get(strconv.Itoa(index))
-		count := unmarshalMovies(b)
-		totalMovies = totalMovies + unmarshalMovies(b)
+		mr.pageIndex = strconv.Itoa(index)
+		b, _ := mr.get(mr.pageIndex)
+		count := mr.unmarshalMovies(b)
+		totalMovies = totalMovies + count
 		if count == 0 {
 			break
 		}
@@ -92,17 +101,17 @@ func main() {
 
 }
 
-func get(pageIndex string) ([]byte, error) {
-	url := "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"
-	req, _ := requesrUrl(url, pageIndex)
-	req.Header.Add("content-type", "application/x-www-form-urlencoded")
-	res, _ := http.DefaultClient.Do(req)
+func (mr *MovieRequester) get(pageIndex string) ([]byte, error) {
+	//url := "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"
+	mr.request, _ = mr.requesrUrl()
+	mr.request.Header.Add("content-type", "application/x-www-form-urlencoded")
+	res, _ := http.DefaultClient.Do(mr.request)
 	defer res.Body.Close()
 	return ioutil.ReadAll(res.Body)
 
 }
 
-func unmarshalMovies(b []byte) int {
+func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 	r := VootResponse{}
 	json.Unmarshal(b, &r)
 	for _, movies := range r.Assets {
@@ -111,17 +120,17 @@ func unmarshalMovies(b []byte) int {
 	return len(r.Assets)
 }
 
-func getPostVars(pageIndex string) io.Reader {
+func (mr *MovieRequester) getPostVars() io.Reader {
 	form := url.Values{}
 	form.Add("filterTypes", "390")
 	//form.Add("filter", "(and (and  contentType='Movie' ))")
-	form.Add("pageIndex", pageIndex)
+	form.Add("pageIndex", mr.pageIndex)
 	form.Add("pageSize", "10")
 	fmt.Println(form.Encode())
 	return strings.NewReader(form.Encode())
 }
 
-func requesrUrl(url, pageIndex string) (*http.Request, error) {
-	return http.NewRequest("POST", url, getPostVars(pageIndex))
+func (mr *MovieRequester) requesrUrl() (*http.Request, error) {
+	return http.NewRequest("POST", mr.url, mr.getPostVars())
 
 }
