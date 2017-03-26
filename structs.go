@@ -130,3 +130,37 @@ type VootResponse struct {
 		Message string `json:"message"`
 	} `json:"status"`
 }
+
+type ErosNowResponse struct {
+	Count string `json:"count"`
+	Total string `json:"total"`
+	Rows  []struct {
+		AssetID     string   `json:"asset_id"`
+		Title       string   `json:"title"`
+		Language    string   `json:"language"`
+		Rating      string   `json:"rating"`
+		Description string   `json:"description"`
+		Subtitles   []string `json:"subtitles"`
+		AccessLevel string   `json:"access_level"`
+		Duration    string   `json:"duration"`
+		People      struct {
+			Producer      []string `json:"Producer"`
+			MusicDirector []string `json:"Music director"`
+			Actor         []string `json:"Actor"`
+			Director      []string `json:"Director"`
+		} `json:"people"`
+		ShortDescription string `json:"short_description"`
+		Free             string `json:"free"`
+		AssetType        string `json:"asset_type"`
+		ReleaseYear      string `json:"release_year"`
+		Images           struct {
+			Num8  string `json:"8"`
+			Num9  string `json:"9"`
+			Num12 string `json:"12"`
+			Num13 string `json:"13"`
+			Num17 string `json:"17"`
+			Num22 string `json:"22"`
+		} `json:"images"`
+		ErosRating string `json:"eros_rating,omitempty"`
+	} `json:"rows"`
+}
