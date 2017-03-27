@@ -39,6 +39,7 @@ func main() {
 
 	var err error
 
+	//TODO move to config
 	session, err = mgo.Dial("52.168.20.79")
 	if err != nil {
 		panic(err)
@@ -95,7 +96,9 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 		r := HotstarResponse{}
 		json.Unmarshal(b, &r)
 		for _, movie := range r.ResultObj.Response.Docs {
-			movie.Website = mr.website
+			movie.FilmDescription = movie.LongDescription
+			movie.FilmName = movie.ContentTitle
+			movie.FilmWebsite = mr.website
 			mr.db.Insert(movie)
 			fmt.Println(movie.ContentTitle + "    " + mr.website)
 		}
@@ -107,7 +110,9 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			log.Println("Error while unmarshalling voot", err)
 		}
 		for _, movie := range r.Assets {
-			movie.Website = mr.website
+			movie.FilmDescription = movie.Description
+			movie.FilmName = movie.Name
+			movie.FilmWebsite = mr.website
 			mr.db.Insert(movie)
 			fmt.Println(movie.Name + "    " + mr.website)
 		}
@@ -119,7 +124,9 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			log.Println("Error while unmarshalling erosnow", err)
 		}
 		for _, movie := range r.Rows {
-			movie.Website = mr.website
+			movie.FilmDescription = movie.Description
+			movie.FilmName = movie.Title
+			movie.FilmWebsite = mr.website
 			mr.db.Insert(movie)
 			fmt.Println(movie.Title + "    " + mr.website)
 		}

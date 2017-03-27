@@ -11,7 +11,7 @@ type HotstarResponse struct {
 	ResultObj        struct {
 		Response struct {
 			Docs []struct {
-				Website           string
+				CommonResponse
 				Actors            string        `json:"actors"`
 				Anchors           string        `json:"anchors"`
 				Authors           string        `json:"authors"`
@@ -71,7 +71,7 @@ type HotstarResponse struct {
 
 type VootResponse struct {
 	Assets []struct {
-		Website     string
+		CommonResponse
 		ID          string `json:"id"`
 		Type        int    `json:"type"`
 		Name        string `json:"name"`
@@ -133,11 +133,17 @@ type VootResponse struct {
 	} `json:"status"`
 }
 
+type CommonResponse struct {
+	FilmName        string
+	FilmWebsite     string
+	FilmDescription string
+}
+
 type ErosNowResponse struct {
 	Count string `json:"count"`
 	Total string `json:"total"`
 	Rows  []struct {
-		Website     string
+		CommonResponse
 		AssetID     string   `json:"asset_id"`
 		Title       string   `json:"title"`
 		Language    string   `json:"language"`
