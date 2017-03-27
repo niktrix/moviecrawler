@@ -71,8 +71,7 @@ type HotstarResponse struct {
 
 type VootResponse struct {
 	Assets []struct {
-		Website string
-
+		Website     string
 		ID          string `json:"id"`
 		Type        int    `json:"type"`
 		Name        string `json:"name"`
@@ -138,8 +137,7 @@ type ErosNowResponse struct {
 	Count string `json:"count"`
 	Total string `json:"total"`
 	Rows  []struct {
-		Website string
-
+		Website     string
 		AssetID     string   `json:"asset_id"`
 		Title       string   `json:"title"`
 		Language    string   `json:"language"`
