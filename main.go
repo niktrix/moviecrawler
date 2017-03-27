@@ -94,9 +94,10 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 	case "hotstar":
 		r := HotstarResponse{}
 		json.Unmarshal(b, &r)
-		for _, movies := range r.ResultObj.Response.Docs {
-			mr.db.Insert(movies)
-			fmt.Println(movies.ContentTitle + "    " + mr.website)
+		for _, movie := range r.ResultObj.Response.Docs {
+			movie.Website = mr.website
+			mr.db.Insert(movie)
+			fmt.Println(movie.ContentTitle + "    " + mr.website)
 		}
 		return len(r.ResultObj.Response.Docs)
 	case "voot":
@@ -105,9 +106,10 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 		if err != nil {
 			log.Println("Error while unmarshalling voot", err)
 		}
-		for _, movies := range r.Assets {
-			mr.db.Insert(movies)
-			fmt.Println(movies.Name + "    " + mr.website)
+		for _, movie := range r.Assets {
+			movie.Website = mr.website
+			mr.db.Insert(movie)
+			fmt.Println(movie.Name + "    " + mr.website)
 		}
 		return len(r.Assets)
 	case "erosnow":
@@ -116,9 +118,10 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 		if err != nil {
 			log.Println("Error while unmarshalling erosnow", err)
 		}
-		for _, movies := range r.Rows {
-			mr.db.Insert(movies)
-			fmt.Println(movies.Title + "    " + mr.website)
+		for _, movie := range r.Rows {
+			movie.Website = mr.website
+			mr.db.Insert(movie)
+			fmt.Println(movie.Title + "    " + mr.website)
 		}
 		return len(r.Rows)
 
