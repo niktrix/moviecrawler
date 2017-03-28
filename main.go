@@ -120,7 +120,8 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmGenre = stringArrToCSV(movie.Tags.Genre)
 			movie.FilmDirector = stringArrToCSV(movie.Tags.MovieDirector)
 			movie.FilmCast = stringArrToCSV(movie.Tags.CharacterList)
-
+			//TODO may give error
+			movie.FilmImage = movie.Images[14].URL
 			_, err := mr.db.Upsert(movie, movie)
 			if err != nil {
 				log.Println("Error updating", err)
@@ -141,6 +142,7 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmGenre = movie.AssetType
 			movie.FilmDirector = stringArrToCSV(movie.People.Director)
 			movie.FilmCast = stringArrToCSV(movie.People.Actor)
+			movie.FilmImage = movie.Images.Num13
 			ch, err := mr.db.Upsert(movie, movie)
 			if err != nil {
 				log.Println("Error updating", err)
