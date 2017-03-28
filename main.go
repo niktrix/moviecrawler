@@ -22,7 +22,7 @@ type webconfig struct {
 var availableWebsites = []webconfig{
 	{"voot", "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"},
 	{"hotstar", "http://search.hotstar.com/AVS/besc"},
-	{"erosnow", "http://erosnow.com/v2/catalog/movies"},
+	//{"erosnow", "http://erosnow.com/v2/catalog/movies"},
 }
 
 type MovieRequester struct {
@@ -99,21 +99,39 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmDescription = movie.LongDescription
 			movie.FilmName = movie.ContentTitle
 			movie.FilmWebsite = mr.website
-			mr.db.Insert(movie)
+			movie.FilmDirector = movie.Directors
+			movie.FilmCast = movie.Actors
+			ch, err := mr.db.Upsert(movie, movie)
+			if err != nil {
+				log.Println("Error updating", err)
+			}
+			fmt.Println(ch)
 			fmt.Println(movie.ContentTitle + "    " + mr.website)
 		}
 		return len(r.ResultObj.Response.Docs)
 	case "voot":
 		r := VootResponse{}
-		err := json.Unmarshal(b, &r)
-		if err != nil {
-			log.Println("Error while unmarshalling voot", err)
-		}
+		json.Unmarshal(b, &r)
 		for _, movie := range r.Assets {
-			movie.FilmDescription = movie.Description
+			movie.FilmDescription = movie.Metas.ContentSynopsis
 			movie.FilmName = movie.Name
 			movie.FilmWebsite = mr.website
-			mr.db.Insert(movie)
+			//direcor
+			directors := ""
+			for _, d := range movie.Tags.MovieDirector {
+				directors = directors + d + ","
+			}
+			movie.FilmDirector = directors
+			//actors
+			cast := ""
+			for _, d := range movie.Tags.CharacterList {
+				cast = cast + d + ","
+			}
+			movie.FilmCast = cast
+			_, err := mr.db.Upsert(movie, movie)
+			if err != nil {
+				log.Println("Error updating", err)
+			}
 			fmt.Println(movie.Name + "    " + mr.website)
 		}
 		return len(r.Assets)
@@ -127,7 +145,11 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmDescription = movie.Description
 			movie.FilmName = movie.Title
 			movie.FilmWebsite = mr.website
-			mr.db.Insert(movie)
+			ch, err := mr.db.Upsert(movie, movie)
+			if err != nil {
+				log.Println("Error updating", err)
+			}
+			fmt.Println(ch)
 			fmt.Println(movie.Title + "    " + mr.website)
 		}
 		return len(r.Rows)
