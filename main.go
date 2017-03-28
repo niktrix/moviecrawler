@@ -20,7 +20,7 @@ type webconfig struct {
 }
 
 var availableWebsites = []webconfig{
-	{"voot", "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"},
+	//{"voot", "https://wapi.voot.com/ws/ott/searchAssets.json?platform=Web&pId=2"},
 	{"hotstar", "http://search.hotstar.com/AVS/besc"},
 	//{"erosnow", "http://erosnow.com/v2/catalog/movies"},
 }
@@ -101,6 +101,7 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmWebsite = mr.website
 			movie.FilmDirector = movie.Directors
 			movie.FilmCast = movie.Actors
+			movie.FilmGenre = movie.Genre
 			ch, err := mr.db.Upsert(movie, movie)
 			if err != nil {
 				log.Println("Error updating", err)
@@ -116,18 +117,10 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmDescription = movie.Metas.ContentSynopsis
 			movie.FilmName = movie.Name
 			movie.FilmWebsite = mr.website
-			//direcor
-			directors := ""
-			for _, d := range movie.Tags.MovieDirector {
-				directors = directors + d + ","
-			}
-			movie.FilmDirector = directors
-			//actors
-			cast := ""
-			for _, d := range movie.Tags.CharacterList {
-				cast = cast + d + ","
-			}
-			movie.FilmCast = cast
+			movie.FilmGenre = stringArrToCSV(movie.Tags.Genre)
+			movie.FilmDirector = stringArrToCSV(movie.Tags.MovieDirector)
+			movie.FilmCast = stringArrToCSV(movie.Tags.CharacterList)
+
 			_, err := mr.db.Upsert(movie, movie)
 			if err != nil {
 				log.Println("Error updating", err)
@@ -145,6 +138,9 @@ func (mr *MovieRequester) unmarshalMovies(b []byte) int {
 			movie.FilmDescription = movie.Description
 			movie.FilmName = movie.Title
 			movie.FilmWebsite = mr.website
+			movie.FilmGenre = movie.AssetType
+			movie.FilmDirector = stringArrToCSV(movie.People.Director)
+			movie.FilmCast = stringArrToCSV(movie.People.Actor)
 			ch, err := mr.db.Upsert(movie, movie)
 			if err != nil {
 				log.Println("Error updating", err)
@@ -200,4 +196,12 @@ func (mr *MovieRequester) requesrUrl() (*http.Request, error) {
 		return http.NewRequest("GET", mr.url, nil)
 	}
 	return nil, nil
+}
+
+func stringArrToCSV(str []string) string {
+	t := ""
+	for _, v := range str {
+		t = t + v + ", "
+	}
+	return t
 }

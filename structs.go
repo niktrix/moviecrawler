@@ -139,6 +139,7 @@ type CommonResponse struct {
 	FilmDescription string
 	FilmDirector    string
 	FilmCast        string
+	FilmGenre       string
 }
 
 type ErosNowResponse struct {
